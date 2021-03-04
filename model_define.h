@@ -136,7 +136,7 @@ const REAL A_MCARRIER_DENSITY_PER_UB =  1000 / (32.0 *32.0 * 32.0 ) ;  // 2000 /
 const REAL INIT_CELLS_PER_MICROCARRIER = 4; //10;
 const REAL A_CELL_D_MAX[ NUM_AGENT_TYPES ] = { 150.0 * 1.25, 20.0 * 1.25 };
 
-
+const S32 ADHESION_TYPE = 2; //change the type of adhesion implementation, 1 for tanh based, 2 for piecewise linear, 3 for lennart-jones
 const REAL ADHESION_S = 0.01;
 const REAL RANDOM_VIBRATION_SCALE = 0.05;
 
