@@ -24,7 +24,7 @@ using namespace std;
 void ModelRoutine::updateSpAgentOutput( const VIdx& vIdx, const SpAgent& spAgent, REAL& color, Vector<REAL>& v_extraReal, Vector<VReal>& v_extraVReal ) {
 	/* MODEL START */
 
-	color = spAgent.state.getType();
+	color = spAgent.state.getModelInt( CELL_MODEL_INT_STATE );
 	CHECK( v_extraReal.size() == NUM_PARTICLE_EXTRA_OUTPUT_REALS );
         REAL radius = spAgent.state.getModelReal( CELL_MODEL_REAL_RADIUS );   
 	v_extraReal[PARTICLE_EXTRA_OUTPUT_REAL_RADIUS] = radius;
@@ -58,48 +58,71 @@ void ModelRoutine::updateSpAgentOutput( const VIdx& vIdx, const SpAgent& spAgent
 #endif
 
 void ModelRoutine::updateSummaryVar( const VIdx& vIdx, const NbrUBAgentData& nbrUBAgentData, const NbrUBEnv& nbrUBEnv, Vector<REAL>& v_realVal/* [elemIdx] */, Vector<S32>& v_intVal/* [elemIdx] */ ) {
-	/* MODEL START */
+   /* MODEL START */
 
+   CHECK( v_realVal.size() == NUM_GRID_SUMMARY_REALS );
+   CHECK( v_intVal.size() == 0 );
 
-  CHECK( v_realVal.size() == NUM_GRID_SUMMARY_REALS );
-  CHECK( v_intVal.size() == 0 );
+   const UBAgentData& ubAgentData = *( nbrUBAgentData.getConstPtr( 0, 0, 0 ) );
 
-        const UBAgentData& ubAgentData = *( nbrUBAgentData.getConstPtr( 0, 0, 0 ) );
+   REAL count_micro = 0.0;
+   REAL count_live = 0.0;
+   REAL count_attached = 0.0;
+   REAL count_death = 0.0;
+   REAL max_disp = 0.0;
+   REAL max_fact = -1.0 ;
 
-        REAL count = 0.0;
-        REAL max_disp = 0.0;
-        REAL max_fact = -1.0 ;
-
-        /* Count the number of cells placed in the Simulation Domain */
-
-        for (S32 i = 0 ; i < ( S32 )ubAgentData.v_spAgent.size() ; i++ ) {
-
-          count += 1.0 ;
-          REAL dx = FABS(  ubAgentData.v_spAgent[i].state.getModelReal( CELL_MODEL_REAL_DX )) ;
-          if ( dx > max_disp )  max_disp = dx ;
+   /* Count the number of cells placed in the Simulation Domain */
+   for (S32 i = 0 ; i < ( S32 )ubAgentData.v_spAgent.size() ; i++ ) {
           
-          REAL dy = FABS(  ubAgentData.v_spAgent[i].state.getModelReal( CELL_MODEL_REAL_DY )) ;
-          if ( dy > max_disp )  max_disp = dy ;
+      S32 mtype = ubAgentData.v_spAgent[i].state.getModelInt( CELL_MODEL_INT_STATE );
 
-          REAL dz = FABS(  ubAgentData.v_spAgent[i].state.getModelReal( CELL_MODEL_REAL_DZ )) ;
-          if ( dz > max_disp )  max_disp = dz ;
+      if ( mtype == MCARRIER_INERT ) 
+         count_micro += 1.0 ;
+      else if ( mtype == CELL_A_LIVE ) { 
+         count_live += 1.0;
+         //if ( ubAgentData.v_spAgent[i].state.getModelInt(CELL_MODEL_INT_STATE) == CELL_A_LIVE ) {
+         //    for( S32 i = 0 ; i < ubAgentData.v_spAgent[i].junctionData.getNumJunctions() ; i++ ) {
+         //        const JunctionEnd& end = ubAgentData.v_spAgent[i].junctionData.getJunctionEndRef( i );
+        //         if ( end.getType() == JUNCTION_END_TYPE_MICROCARRIER ) {
+         //             count_attached += 1.0; 
+         //           break;
+         //        }
+         //    }
+         //}
+      }
+      else if ( mtype == CELL_A_DEATH )
+         count_death += 1.0;
 
-          REAL mech_stress  = ubAgentData.v_spAgent[i].state.getModelReal( CELL_MODEL_REAL_STRESS  ) ;
-          REAL factor =  STRESS_TRESHOLD*STRESS_TRESHOLD / ( STRESS_TRESHOLD*STRESS_TRESHOLD +  mech_stress*mech_stress  );
-          if ( factor > max_fact ) max_fact = factor ;
-
+      REAL dx = FABS(  ubAgentData.v_spAgent[i].state.getModelReal( CELL_MODEL_REAL_DX )) ;
+      if ( dx > max_disp )  max_disp = dx ;
           
-        }
+      REAL dy = FABS(  ubAgentData.v_spAgent[i].state.getModelReal( CELL_MODEL_REAL_DY )) ;
+      if ( dy > max_disp )  max_disp = dy ;
 
-        /* GRID_SUMMARY_REAL_LIVE_CELLS is set in model_routine_config.cpp */
-        v_realVal[GRID_SUMMARY_REAL_LIVE_CELLS] = count;
-        v_realVal[GRID_SUMMARY_REAL_MAX_DISP ] = max_disp * BASELINE_TIME_STEP_DURATION ;
-        v_realVal[GRID_SUMMARY_REAL_MAX_GROWRATE ]  = max_fact ; 
-        /* MODEL END */
+      REAL dz = FABS(  ubAgentData.v_spAgent[i].state.getModelReal( CELL_MODEL_REAL_DZ )) ;
+      if ( dz > max_disp )  max_disp = dz ;
+
+      REAL mech_stress  = ubAgentData.v_spAgent[i].state.getModelReal( CELL_MODEL_REAL_STRESS  ) ;
+      REAL factor =  STRESS_TRESHOLD*STRESS_TRESHOLD / ( STRESS_TRESHOLD*STRESS_TRESHOLD +  mech_stress*mech_stress  );
+      if ( factor > max_fact ) max_fact = factor ;
+
+   }
 
 
-	/* MODEL END */
+ 
+   /* URID_SUMMARY_REAL_LIVE_CELLS is set in model_routine_config.cpp */
+   v_realVal[ GRID_SUMMARY_REAL_MICROCARRIERS ] = count_micro;
+   v_realVal[ GRID_SUMMARY_REAL_LIVE_CELLS ] = count_live;
+   v_realVal[ GRID_SUMMARY_REAL_LIVE_ATTACHED ] = count_attached ;
+   v_realVal[ GRID_SUMMARY_REAL_DEATH ] = count_death;
+   v_realVal[ GRID_SUMMARY_REAL_REMOVED ] = nbrUBEnv.getModelReal(0,0,0,GRID_MODEL_REAL_DEATHCELL_COUNT )  ;
+   v_realVal[GRID_SUMMARY_REAL_MAX_DISP ] = max_disp * BASELINE_TIME_STEP_DURATION ;
+   v_realVal[GRID_SUMMARY_REAL_MAX_GROWRATE ]  = max_fact ; 
+   /* MODEL END */
 
-	return;
+
+   /* MODEL END */
+   return;
 }
 

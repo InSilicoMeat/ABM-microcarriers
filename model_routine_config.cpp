@@ -40,7 +40,7 @@ void ModelRoutine::updateOptModelRoutineCallInfo( OptModelRoutineCallInfo& callI
 	/* MODEL START */
 
 	callInfo.numComputeMechIntrctIters = 1;
-	callInfo.numUpdateIfGridVarPreStateAndGridStepIters = 0;
+	callInfo.numUpdateIfGridVarPreStateAndGridStepIters = 1;
 	callInfo.numUpdateIfGridVarPostStateAndGridStepIters = 0;
 
 	/* MODEL END */
@@ -107,34 +107,35 @@ void ModelRoutine::updateSpAgentInfo( Vector<SpAgentInfo>& v_spAgentInfo ) {/* s
 
 	for( S32 i = 0 ; i < NUM_AGENT_TYPES; i++ ) {
 
-                ODENetInfo odeNetInfo;
-
-                /* ODE setup */
-                odeNetInfo.numVars = NUM_ODE_NET_VAR_GROWING_CELL;
-                odeNetInfo.stiff = ODE_STIFF_NORMAL;
-                odeNetInfo.h = 0.1;
-                odeNetInfo.hm = 0.01;
-                odeNetInfo.epsilon = 1e-6;
-                odeNetInfo.threshold = 1e-3;
-                odeNetInfo.errorThresholdVal = 0.0;
-                odeNetInfo.warningThresholdVal = 0.0;
-                odeNetInfo.setNegToZero = false;
-
-
-
 		SpAgentInfo info;
 
 		info.mechIntrctBdryType = MECH_INTRCT_BDRY_TYPE_SPHERE;
 		info.numStateModelReals = NUM_CELL_STATE_REALS;
-		info.numStateModelInts = 0;
+		info.numStateModelInts = NUM_CELL_STATE_INTS;
 		info.numStateInternalModelReals = 0;
 		info.numStateInternalModelInts = 0;
 		info.v_mechIntrctModelRealInfo.assign( NUM_CELL_MECH_REALS, modelVarInfo );
 		info.v_mechIntrctModelIntInfo.clear();
 		info.v_boolNetInfo.clear();
 
-                if ( i == AGENT_CELL_A ) { 
+                if ( i == AGENT_CELL_A ) {
+ 
+                        ODENetInfo odeNetInfo;
+
+                	/* ODE setup cell growth */
+                	odeNetInfo.numVars = NUM_ODE_NET_VAR_GROWING_CELL;
+                	odeNetInfo.stiff = ODE_STIFF_NORMAL;
+                	odeNetInfo.h = 0.1;
+                	odeNetInfo.hm = 0.01;
+                	odeNetInfo.epsilon = 1e-6;
+                	odeNetInfo.threshold = 1e-3;
+                	odeNetInfo.errorThresholdVal = 0.0;
+                	odeNetInfo.warningThresholdVal = 0.0;
+                	odeNetInfo.setNegToZero = true;
+
 			info.v_odeNetInfo.push_back( odeNetInfo );
+   
+ 
 		} else {
 			info.v_odeNetInfo.clear() ;
 		}
@@ -186,8 +187,12 @@ void ModelRoutine::updatePhiPDEInfo( Vector<PDEInfo>& v_phiPDEInfo ) {
 
 void ModelRoutine::updateIfGridModelVarInfo( Vector<IfGridModelVarInfo>& v_ifGridModelRealInfo, Vector<IfGridModelVarInfo>& v_ifGridModelIntInfo, Vector<IfGridModelVarInfo>& v_ifGridInternalModelRealInfo, Vector<IfGridModelVarInfo>& v_ifGridInternalModelIntInfo ) {
 	/* MODEL START */
+	IfGridModelVarInfo info;
+	v_ifGridModelRealInfo.resize(NUM_GRID_MODEL_REALS);
+        info.name = "CellDeath";
+	info.syncMethod = VAR_SYNC_METHOD_OVERWRITE; // this variable is not expected to be modified by concurrent routines
+	v_ifGridModelRealInfo[GRID_MODEL_REAL_DEATHCELL_COUNT ] = info;
 
-	v_ifGridModelRealInfo.clear();
 	v_ifGridModelIntInfo.clear();
 	v_ifGridInternalModelRealInfo.clear();
 	v_ifGridInternalModelIntInfo.clear();
@@ -259,9 +264,25 @@ void ModelRoutine::updateSummaryOutputInfo( Vector<SummaryOutputInfo>& v_summary
   v_summaryOutputIntInfo.clear();
   v_summaryOutputRealInfo.resize( NUM_GRID_SUMMARY_REALS );
 
+  info.name = "Number of microcarriers";
+  info.type = SUMMARY_TYPE_SUM;
+  v_summaryOutputRealInfo[ GRID_SUMMARY_REAL_MICROCARRIERS  ] = info;
+
   info.name = "Number of Live Cells";
   info.type = SUMMARY_TYPE_SUM;
   v_summaryOutputRealInfo[GRID_SUMMARY_REAL_LIVE_CELLS] = info;
+
+  info.name = "Number of Live Attached Cells";
+  info.type = SUMMARY_TYPE_SUM;
+  v_summaryOutputRealInfo[GRID_SUMMARY_REAL_LIVE_ATTACHED] = info;
+
+  info.name = "Number of Death Cells";
+  info.type = SUMMARY_TYPE_SUM;
+  v_summaryOutputRealInfo[ GRID_SUMMARY_REAL_DEATH ] = info;
+
+  info.name = "Number of Removed Cells";
+  info.type = SUMMARY_TYPE_SUM;
+  v_summaryOutputRealInfo[ GRID_SUMMARY_REAL_REMOVED ] = info;
 
   info.name = "Maximum displacement";
   info.type = SUMMARY_TYPE_MAX;
@@ -282,8 +303,8 @@ void ModelRoutine::initGlobal( Vector<U8>& v_globalData ) {/* called once per si
 	/* MODEL START */
 
   //cfd_setup((char*)"cfd_velocity_data");
-  //cfd_setup((char*)"Velocity_240rpm.txt");
-  cfd_setup((char*)"Velocity_60rpm.txt");
+  cfd_setup((char*)"Velocity_240rpm.txt");
+  //cfd_setup((char*)"Velocity_60rpm.txt");
 
 	/* MODEL END */
 

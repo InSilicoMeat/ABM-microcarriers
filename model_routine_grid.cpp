@@ -18,9 +18,9 @@ using namespace std;
 
 void ModelRoutine::initIfGridVar( const VIdx& vIdx, const UBAgentData& ubAgentData, UBEnv& ubEnv ) {
 	/* MODEL START */
-
-	ERROR( "unimplemented." );
-
+	for( S32 sol = 0 ; sol < NUM_GRID_MODEL_REALS ; sol++ ) {
+		ubEnv.setModelReal( sol, 0.0 );
+	}
 	/* MODEL END */
 
 	return;
@@ -39,11 +39,28 @@ void ModelRoutine::initIfSubgridKappa( const S32 pdeIdx, const VIdx& vIdx, const
 void ModelRoutine::updateIfGridVar( const BOOL pre, const S32 iter, const VIdx& vIdx, const NbrUBAgentData& nbrUBAgentData, NbrUBEnv& nbrUBEnv/* [INOUT] */ ) {
 	/* MODEL START */
 
-	ERROR( "unimplemented." );
+   if ( pre == true ) {
+      REAL gridcount =  nbrUBEnv.getModelReal(0,0,0,GRID_MODEL_REAL_DEATHCELL_COUNT ) ;  
+      const UBAgentData& ubAgentData = *( nbrUBAgentData.getConstPtr(0,0,0) ) ; 
 
-	/* MODEL END */
+      for( S32 i = 0 ; i < ( S32 )ubAgentData.v_spAgent.size() ; i++ ) {
+         const SpAgent& spAgent = ubAgentData.v_spAgent[i];
+         agentType_t type = spAgent.state.getType();
 
-	return;
+         if ( type == AGENT_CELL_A )  {
+            REAL cell_rad = spAgent.state.getModelReal( CELL_MODEL_REAL_RADIUS ) ;
+
+            if ( cell_rad <= A_MIN_CELL_RADIUS[type] ) {
+               gridcount += 1.0 ;
+            }
+         }
+      }
+
+      nbrUBEnv.setModelReal(0,0,0,GRID_MODEL_REAL_DEATHCELL_COUNT, gridcount) ;
+   }
+   /* MODEL END */
+
+   return;
 }
 
 void ModelRoutine::updateIfSubgridKappa( const S32 pdeIdx, const VIdx& vIdx, const VIdx& ifSubgridVOffset, const UBAgentData& ubAgentData, const UBEnv& ubEnv, REAL& kappa ) {
