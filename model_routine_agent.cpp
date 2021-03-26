@@ -48,7 +48,8 @@ void ModelRoutine::addSpAgents( const BOOL init, const VIdx& startVIdx, const VI
 			VIdx vIdx;
 			VReal vOffset;
 			SpAgentState state;
-
+                        REAL dist = 0.0 ;
+                    do {
 			for( S32 dim = 0 ; dim < DIMENSION ; dim++ ) {
 
 				REAL randScale = Util::getModelRand( MODEL_RNG_UNIFORM ) ;/* [0.0,1.0) */
@@ -61,10 +62,10 @@ void ModelRoutine::addSpAgents( const BOOL init, const VIdx& startVIdx, const VI
 				//vPos[dim] =  REAL ( Info::getDomainSize( dim ) ) * IF_GRID_SPACING  * 0.5  +   BIO_RADIUS * randScale ;
 			}
 
-                        REAL dist = SQRT( (vPos[0] - xo)*(vPos[0] - xo) + (vPos[1] - yo)*(vPos[1] - yo) );
-                        if ( ( dist >= BIO_RADIUS - 290.0 ) || ( vPos[2] >= BIO_HEIGHT - 290.0  ) || ( vPos[2] <= 290.0 ) ) {
-                             continue ;
-                        }
+                        dist = SQRT( (vPos[0] - xo)*(vPos[0] - xo) + (vPos[1] - yo)*(vPos[1] - yo) );
+                    } while (  ( dist >= BIO_RADIUS - 290.0 ) || ( vPos[2] >= BIO_HEIGHT - 290.0  ) || ( vPos[2] <= 290.0 ) ) ; 
+                             
+                        
 
 			Util::changePosFormat1LvTo2Lv( vPos, vIdx, vOffset );
 
