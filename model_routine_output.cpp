@@ -79,17 +79,11 @@ void ModelRoutine::updateSummaryVar( const VIdx& vIdx, const NbrUBAgentData& nbr
 
       if ( mtype == MCARRIER_INERT ) 
          count_micro += 1.0 ;
+         if ( ubAgentData.v_spAgent[i].state.getType() == AGENT_MCARRIER ) {
+            count_attached  +=  ( REAL) ubAgentData.v_spAgent[i].junctionData.getNumJunctions() ; 
+         }
       else if ( mtype == CELL_A_LIVE ) { 
          count_live += 1.0;
-         //if ( ubAgentData.v_spAgent[i].state.getModelInt(CELL_MODEL_INT_STATE) == CELL_A_LIVE ) {
-         //    for( S32 i = 0 ; i < ubAgentData.v_spAgent[i].junctionData.getNumJunctions() ; i++ ) {
-         //        const JunctionEnd& end = ubAgentData.v_spAgent[i].junctionData.getJunctionEndRef( i );
-        //         if ( end.getType() == JUNCTION_END_TYPE_MICROCARRIER ) {
-         //             count_attached += 1.0; 
-         //           break;
-         //        }
-         //    }
-         //}
       }
       else if ( mtype == CELL_A_DEATH )
          count_death += 1.0;
