@@ -32,7 +32,7 @@ inline REAL MonodEquation(  REAL Kc , REAL u ) {
 
 /* MODEL START */
 const S32 SYSTEM_DIMENSION = 3;
-const REAL IF_GRID_SPACING = 1750.0 * 8; // micro meters
+const REAL IF_GRID_SPACING = 120; // in micrometers
 const REAL EPSILON = 1e-20;
 
 typedef enum _model_rng_type_e {
