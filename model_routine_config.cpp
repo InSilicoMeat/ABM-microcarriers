@@ -238,7 +238,7 @@ void ModelRoutine::updateFileOutputInfo( FileOutputInfo& fileOutputInfo ) {
 	/* MODEL START */
 
 	fileOutputInfo.v_spAgentParticleOutput.assign( NUM_AGENT_TYPES , true );
-	CHECK( NUM_PARTICLE_EXTRA_OUTPUT_REALS == 1 );
+	CHECK( NUM_PARTICLE_EXTRA_OUTPUT_REALS == 7 );
 	fileOutputInfo.v_particleExtraOutputRealName.resize( NUM_PARTICLE_EXTRA_OUTPUT_REALS );
 	fileOutputInfo.v_particleExtraOutputRealName[PARTICLE_EXTRA_OUTPUT_REAL_RADIUS] = "radius";
 	fileOutputInfo.v_particleExtraOutputRealName[PARTICLE_EXTRA_OUTPUT_REAL_STRESS] = "stress";
@@ -303,9 +303,17 @@ void ModelRoutine::initGlobal( Vector<U8>& v_globalData ) {/* called once per si
 	/* MODEL START */
 
   //cfd_setup((char*)"cfd_velocity_data");
-  cfd_setup((char*)"Velocity_240rpm.txt");
-  //cfd_setup((char*)"Velocity_60rpm.txt");
-
+  
+	if (STIR_SPEED == 60)
+	{
+		cfd_setup((char*)"Velocity_60rpm.txt");
+	}
+	if (STIR_SPEED == 180) {
+		cfd_setup((char*)"Velocity_180rpm.txt");
+	}
+	if (STIR_SPEED == 220) {
+		cfd_setup((char*)"Velocity_220rpm.txt");
+	}
 	/* MODEL END */
 
 	return;

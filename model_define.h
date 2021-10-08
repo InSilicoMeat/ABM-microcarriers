@@ -165,7 +165,7 @@ const REAL RANDOM_VIBRATION_SCALE = 0.05;
 const S32 MECH_INTRCT_ELLIPSOID_MAX_ITERS = 100;
 const REAL MECH_INTRCT_ELLIPSOID_EPSILON = 1e-10;
 
-const REAL BASELINE_TIME_STEP_DURATION = 0.00002  ; //0.0001; //  seconds
+const REAL BASELINE_TIME_STEP_DURATION = 0.00001; //0.00002  ; //  seconds
 const REAL STEP_TIME = 1.0 ;
 const REAL NUM_STATE_AND_GRID_TIME_STEPS_PER_BASELINE = 1 ;
 
@@ -176,9 +176,10 @@ const REAL STRESS_TRESHOLD = 1e-6 ;  // 1e-7 ; //1e-7 ; //
 const REAL STRESS_HILL_EXPONENT = 5.0 ;
 const REAL STRESS_TRESHOLD_OVER_N = POW( STRESS_TRESHOLD , STRESS_HILL_EXPONENT ) ;
  
-// Bioreactor Geometry
-const REAL BIO_RADIUS = 55000 * 0.5; // micrometers
+// Bioreactor Information
+const REAL BIO_RADIUS = 55000 * 0.5; // 27500 micrometers
 const REAL BIO_HEIGHT = 42895; // micrometers
+const REAL STIR_SPEED = 60; // rotation speed of the rotor and velocity field 
 
 // Boundary forces 
 // U =  eps_B * exp( delta / sigma_B )  for delta >0 ; 0 othersie

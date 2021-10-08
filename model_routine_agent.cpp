@@ -92,7 +92,7 @@ void ModelRoutine::addSpAgents( const BOOL init, const VIdx& startVIdx, const VI
 
                         // for each microcarrier generate cells
                         S32 numCells =  INIT_CELLS_PER_MICROCARRIER ; // should from Poisson distribution
-			for ( S32 i = 0 ; i < numCells ; i++ ) {
+      for ( S32 i = 0 ; i < numCells ; i++ ) {
 
                              VReal vPos_c;
                              VIdx vIdx_c;
@@ -107,7 +107,7 @@ void ModelRoutine::addSpAgents( const BOOL init, const VIdx& startVIdx, const VI
                               
                              REAL rho = A_CELL_RADIUS[AGENT_MCARRIER] + cellrad ;
 
-                             
+                            
 
                              REAL V1, V2, V3, S ;
                              do {
@@ -119,22 +119,22 @@ void ModelRoutine::addSpAgents( const BOOL init, const VIdx& startVIdx, const VI
                              }
                              while (  S >= 1.0  || S < 0 ) ;
 
-			     REAL sqrtS = SQRT( S ) ;
-			     vPos_c[0] = vPos[0] + rho * V1 / sqrtS  ;
-			     vPos_c[1] = vPos[1] + rho * V2 / sqrtS  ;
-			     vPos_c[2] = vPos[2] + rho * V3 / sqrtS  ;
- 
+           REAL sqrtS = SQRT( S ) ;
+           vPos_c[0] = vPos[0] + rho * V1 / sqrtS  ;
+           vPos_c[1] = vPos[1] + rho * V2 / sqrtS  ;
+           vPos_c[2] = vPos[2] + rho * V3 / sqrtS  ;
+
                              for ( S32 k = 0 ; k < 3; k++ ) { 
                                 if  ( vPos_c[k] > 32 * IF_GRID_SPACING )  // 32 ?? change this 
                                     vPos_c[k] =  vPos_c[k] - 32.0 * IF_GRID_SPACING ; 
                                 else if (  vPos_c[0] < 0.0 )  
                                     vPos_c[k] =  32.0 * IF_GRID_SPACING - vPos_c[k] ;
- 
-                             }
-			     Util::changePosFormat1LvTo2Lv( vPos_c, vIdx_c, vOffset_c );
-                                       
 
-			     state_c.setType( AGENT_CELL_A );
+                             }
+           Util::changePosFormat1LvTo2Lv( vPos_c, vIdx_c, vOffset_c );
+                                      
+
+           state_c.setType( AGENT_CELL_A );
                              state_c.setModelReal( CELL_MODEL_REAL_RADIUS, cellrad );
                              REAL biomass = volume_agent( cellrad )*A_DENSITY_BIOMASS[ AGENT_CELL_A ] ;
                              state_c.setModelReal( CELL_MODEL_REAL_MASS, biomass );
@@ -156,7 +156,7 @@ void ModelRoutine::addSpAgents( const BOOL init, const VIdx& startVIdx, const VI
                              v_spAgentVIdx.push_back( vIdx_c );
                              v_spAgentState.push_back( state_c );
                              v_spAgentVOffset.push_back( vOffset_c );
-                             
+                            
                             
                         }
 		}
@@ -321,7 +321,16 @@ void ModelRoutine::adjustSpAgent( const VIdx& vIdx, const JunctionData& junction
   double z =  GRID_SIZE * vIdx[2] +  GRID_SIZE*0.5   +  vOffset[2];
   double u=0, v=0, w=0;
 
-  cfd_query( (x - xo)*1e-6, (y - yo)*1e-6, z*1e-6, &u, &v, &w); // velocity units m/s
+  // retrieve positions in rotated velocity field
+  REAL current_time = REAL( Info::getCurBaselineTimeStep() * BASELINE_TIME_STEP_DURATION); // current number of timesteps *  number of seconds per timestep
+  REAL vfield_angle = fmod(current_time, (60 / STIR_SPEED)) * 2 * MY_PI; // angle in radians
+  double x_rot = x * COS(vfield_angle) + y * SIN(vfield_angle);
+  double y_rot = - x * SIN(vfield_angle) + y * COS(vfield_angle);
+
+  // number of baseline simulation steps
+
+
+  cfd_query( (x_rot - xo)*1e-6, (y_rot - yo)*1e-6, z*1e-6, &u, &v, &w); // velocity units m/s
   
   // velocity of fluid in um/s
   vFluidV[0] = u*1e6 * VELOCITY_DAMPING_TEST ;
