@@ -179,7 +179,8 @@ const REAL STRESS_TRESHOLD_OVER_N = POW( STRESS_TRESHOLD , STRESS_HILL_EXPONENT 
 // Bioreactor Information
 const REAL BIO_RADIUS = 55000 * 0.5; // 27500 micrometers
 const REAL BIO_HEIGHT = 42895; // micrometers
-const REAL STIR_SPEED = 60; // rotation speed of the rotor and velocity field 
+const BOOL ROTATE_VFIELD = true; //whether or not to rotate the velocity field in the simulation
+const REAL STIR_SPEED = 220; // selects the velocity field filename and also sets the rotational speed of the field if ROTATE_VFIELD == true 
 
 // Boundary forces 
 // U =  eps_B * exp( delta / sigma_B )  for delta >0 ; 0 othersie

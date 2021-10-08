@@ -320,15 +320,17 @@ void ModelRoutine::adjustSpAgent( const VIdx& vIdx, const JunctionData& junction
   double y =  GRID_SIZE * vIdx[1] +  GRID_SIZE*0.5   +  vOffset[1];
   double z =  GRID_SIZE * vIdx[2] +  GRID_SIZE*0.5   +  vOffset[2];
   double u=0, v=0, w=0;
+  double x_rot = x;
+  double y_rot = y;
 
-  // retrieve positions in rotated velocity field
-  REAL current_time = REAL( Info::getCurBaselineTimeStep() * BASELINE_TIME_STEP_DURATION); // current number of timesteps *  number of seconds per timestep
-  REAL vfield_angle = fmod(current_time, (60 / STIR_SPEED)) * 2 * MY_PI; // angle in radians
-  double x_rot = x * COS(vfield_angle) + y * SIN(vfield_angle);
-  double y_rot = - x * SIN(vfield_angle) + y * COS(vfield_angle);
-
-  // number of baseline simulation steps
-
+  if (ROTATE_VFIELD){
+    // retrieve positions in rotated velocity field
+    double intpart;
+    REAL current_time = REAL( Info::getCurBaselineTimeStep() * BASELINE_TIME_STEP_DURATION); // current number of timesteps *  number of seconds per timestep = current time in seconds
+    REAL vfield_angle = 2 * MY_PI * modf(current_time / (60 / STIR_SPEED), &intpart); // angle in radians
+    x_rot = x * COS(vfield_angle) + y * SIN(vfield_angle);
+    y_rot = - x * SIN(vfield_angle) + y * COS(vfield_angle);
+  };  
 
   cfd_query( (x_rot - xo)*1e-6, (y_rot - yo)*1e-6, z*1e-6, &u, &v, &w); // velocity units m/s
   
